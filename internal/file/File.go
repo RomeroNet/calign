@@ -32,27 +32,14 @@ func New(path string) (*File, error) {
 	}, nil
 }
 
-func (f *File) longestLineLength() int {
+func (f *File) longestLeftSideLength() int {
 	maxLength := 0
 
 	for _, line := range f.content {
-		lineLength := 0
-		isCountingSpaces := false
+		leftHandMatch := leftHandRegex.FindString(line)
 
-		for _, char := range line {
-			if isCountingSpaces && char != ' ' {
-				break
-			}
-
-			lineLength++
-
-			if char == ' ' {
-				isCountingSpaces = true
-			}
-		}
-
-		if lineLength > maxLength {
-			maxLength = lineLength
+		if len(leftHandMatch) > maxLength {
+			maxLength = len(leftHandMatch)
 		}
 	}
 
@@ -60,11 +47,11 @@ func (f *File) longestLineLength() int {
 }
 
 func (f *File) align() {
-	maxLength := f.longestLineLength()
+	longestLeftSideLength := f.longestLeftSideLength()
 
 	for i, line := range f.content {
 		leftHandMatch := leftHandRegex.FindString(line)
-		trueLength := maxLength - len(leftHandMatch) + 1
+		trueLength := longestLeftSideLength - len(leftHandMatch) + 1
 
 		if trueLength < 0 {
 			trueLength = 1
@@ -74,19 +61,8 @@ func (f *File) align() {
 	}
 }
 
-func (f *File) store() error {
-	output := strings.Join(f.content, "\n") + "\n"
-
-	err := os.WriteFile(f.path, []byte(output), 0o644)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (f *File) Process() error {
 	f.align()
-	return f.store()
+	output := strings.Join(f.content, "\n") + "\n"
+	return os.WriteFile(f.path, []byte(output), 0o644)
 }
