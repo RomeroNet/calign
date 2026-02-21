@@ -29,7 +29,7 @@ func main() {
 		path = workingDir + "/" + path
 	}
 
-	f, err := file.FromPath(path)
+	f, err := file.New(path)
 
 	if err != nil {
 		log.Fatal(err)
